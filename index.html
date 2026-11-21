@@ -1,0 +1,32 @@
+{% extends "base.html" %}{% block body %}
+<section class="card">
+  <div class="brand">FREE <span>CP</span></div>
+  <p class="sub">گردونه شانس</p>
+  <div class="wheel-wrap"><div class="pointer"></div><div id="wheel" class="wheel"><span>10 CP</span><span>20 CP</span><span>30 CP</span><span>50 CP</span><span>100 CP</span><span>شانس دوباره</span><span>25 CP</span><span>75 CP</span></div></div>
+  <form id="spinForm">
+    <label for="g">G: <small>(نام)</small></label><input id="g" name="g_name" maxlength="60" autocomplete="given-name" required placeholder="نام خود را وارد کنید">
+    <label for="p">P: <small>(نام خانوادگی)</small></label><input id="p" name="p_name" maxlength="60" autocomplete="family-name" required placeholder="نام خانوادگی خود را وارد کنید">
+    <button id="spinBtn" type="submit">چرخاندن گردونه</button>
+  </form>
+  <p id="message" class="message" aria-live="polite">هر ترکیب نام و نام خانوادگی، هر ۲۴ ساعت یک بار مجاز به چرخش است.</p>
+  <a class="admin-link" href="/admin">ورود مدیریت</a>
+</section>
+<script>
+const form = document.getElementById('spinForm');
+const wheel = document.getElementById('wheel');
+const btn = document.getElementById('spinBtn');
+const msg = document.getElementById('message');
+form.addEventListener('submit', async (e) => {
+  e.preventDefault();
+  if (!form.reportValidity()) return;
+  btn.disabled = true; msg.textContent = 'در حال چرخش...';
+  try {
+    const response = await fetch('/spin', {method:'POST', body:new FormData(form)});
+    const data = await response.json();
+    if (!response.ok || !data.ok) { msg.textContent = data.message || 'خطا در انجام درخواست'; btn.disabled = false; return; }
+    wheel.style.transform = `rotate(${1440 + Math.floor(Math.random()*360)}deg)`;
+    setTimeout(() => { msg.textContent = 'نتیجه شما: ' + data.prize; btn.disabled = false; }, 3200);
+  } catch(err) { msg.textContent = 'ارتباط با سرور برقرار نشد. دوباره تلاش کنید.'; btn.disabled = false; }
+});
+</script>
+{% endblock %}
